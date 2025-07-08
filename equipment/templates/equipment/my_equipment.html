@@ -1,0 +1,168 @@
+{% extends 'equipment/base.html' %}
+
+{% block title %}Mój sprzęt - AssetStorm{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-user me-2"></i>Mój sprzęt
+            </h1>
+            <div class="btn-group">
+                <a href="{% url 'equipment:equipment_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-list me-1"></i>Wszystki sprzęt
+                </a>
+                {% if is_it_staff %}
+                    <a href="{% url 'equipment:equipment_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Dodaj sprzęt
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Filtry i wyszukiwanie -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Wyszukaj</label>
+                        <input type="text" class="form-control" id="search" name="search" 
+                               value="{{ search_query }}" placeholder="Nazwa, typ, numer seryjny...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">Wszystkie statusy</option>
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>Szukaj
+                        </button>
+                        <a href="{% url 'equipment:my_equipment' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Wyczyść
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista sprzętu -->
+        {% if page_obj %}
+            <div class="row">
+                {% for equipment in page_obj %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">{{ equipment.name }}</h5>
+                            <span class="badge bg-{{ equipment.get_status_display_class }}">
+                                {{ equipment.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-3">
+                                <dt class="col-sm-4">Typ:</dt>
+                                <dd class="col-sm-8">{{ equipment.type }}</dd>
+                                
+                                <dt class="col-sm-4">Numer seryjny:</dt>
+                                <dd class="col-sm-8">
+                                    <code class="small">{{ equipment.serial_number }}</code>
+                                </dd>
+                                
+                                <dt class="col-sm-4">Lokalizacja:</dt>
+                                <dd class="col-sm-8">{{ equipment.location }}</dd>
+                                
+                                <dt class="col-sm-4">Data zakupu:</dt>
+                                <dd class="col-sm-8">{{ equipment.purchase_date|date:"d.m.Y" }}</dd>
+                            </dl>
+                            
+                            {% if equipment.notes %}
+                                <div class="mb-3">
+                                    <strong>Uwagi:</strong>
+                                    <p class="mb-0 small text-muted">{{ equipment.notes|truncatechars:100 }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'equipment:equipment_detail' equipment.pk %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Szczegóły
+                                </a>
+                                {% if equipment.can_be_transferred %}
+                                    <a href="{% url 'equipment:equipment_transfer' equipment.pk %}" 
+                                       class="btn btn-sm btn-success">
+                                        <i class="fas fa-exchange-alt me-1"></i>Przekaż
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Paginacja -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Nawigacja stron">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <h3 class="text-muted">Nie masz przypisanego sprzętu</h3>
+                <p class="text-muted">Nie masz obecnie żadnego sprzętu przypisanego do swojego konta.</p>
+                <a href="{% url 'equipment:equipment_list' %}" class="btn btn-primary">
+                    <i class="fas fa-list me-1"></i>Przeglądaj cały sprzęt
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

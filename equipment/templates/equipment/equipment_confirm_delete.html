@@ -1,0 +1,44 @@
+{% extends 'equipment/base.html' %}
+
+{% block title %}Usuń {{ equipment.name }} - AssetStorm{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Potwierdź usunięcie
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="lead">Czy na pewno chcesz usunąć sprzęt:</p>
+                
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading">{{ equipment.name }}</h5>
+                    <p class="mb-1"><strong>Typ:</strong> {{ equipment.type }}</p>
+                    <p class="mb-1"><strong>Numer seryjny:</strong> {{ equipment.serial_number }}</p>
+                    <p class="mb-0"><strong>Lokalizacja:</strong> {{ equipment.location }}</p>
+                </div>
+                
+                <p class="text-danger">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    <strong>Uwaga:</strong> Ta operacja jest nieodwracalna!
+                </p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Anuluj
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Usuń sprzęt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

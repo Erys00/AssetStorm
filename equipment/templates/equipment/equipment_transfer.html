@@ -1,0 +1,86 @@
+{% extends 'equipment/base.html' %}
+
+{% block title %}{{ title }} - AssetStorm{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">
+                    <i class="fas fa-exchange-alt me-2"></i>{{ title }}
+                </h2>
+            </div>
+            <div class="card-body">
+                <!-- Informacje o sprzęcie -->
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">Informacje o sprzęcie:</h5>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">Nazwa:</dt>
+                        <dd class="col-sm-9">{{ equipment.name }}</dd>
+                        
+                        <dt class="col-sm-3">Typ:</dt>
+                        <dd class="col-sm-9">{{ equipment.type }}</dd>
+                        
+                        <dt class="col-sm-3">Numer seryjny:</dt>
+                        <dd class="col-sm-9"><code>{{ equipment.serial_number }}</code></dd>
+                        
+                        <dt class="col-sm-3">Obecny właściciel:</dt>
+                        <dd class="col-sm-9">
+                            {% if equipment.assigned_to %}
+                                <strong>{{ equipment.assigned_to.get_full_name|default:equipment.assigned_to.username }}</strong>
+                            {% else %}
+                                <span class="text-muted">Nie przypisany</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+
+                <!-- Formularz przekazania -->
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.to_user.id_for_label }}" class="form-label">
+                            {{ form.to_user.label }}
+                        </label>
+                        {{ form.to_user }}
+                        {% if form.to_user.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.to_user.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Wybierz użytkownika, któremu chcesz przekazać sprzęt.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.reason.id_for_label }}" class="form-label">
+                            {{ form.reason.label }}
+                        </label>
+                        {{ form.reason }}
+                        {% if form.reason.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.reason.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">Podaj powód przekazania sprzętu (opcjonalnie).</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Anuluj
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-1"></i>Przekaż sprzęt
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
