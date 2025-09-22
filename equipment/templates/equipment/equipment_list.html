@@ -135,15 +135,6 @@
                                                class="btn btn-outline-danger" title="Usuń">
                                                 <i class="fas fa-trash"></i>
                                             </a>
-                                        {% else %}
-                                            {% if equipment.assigned_to == user %}
-                                                {% if equipment.can_be_transferred %}
-                                                    <a href="{% url 'equipment:equipment_transfer' equipment.pk %}" 
-                                                       class="btn btn-outline-success" title="Przekaż">
-                                                        <i class="fas fa-exchange-alt"></i>
-                                                    </a>
-                                                {% endif %}
-                                            {% endif %}
                                         {% endif %}
                                     </div>
                                 </td>

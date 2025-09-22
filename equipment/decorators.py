@@ -75,9 +75,11 @@ def get_user_equipment_queryset(user):
 def can_transfer_equipment(user, equipment):
     """
     Sprawdza czy użytkownik może przekazać konkretny sprzęt
+    Tylko użytkownicy z grupy IT mogą przekazywać sprzęt
     """
+    # Tylko IT i superuser mogą przekazywać sprzęt
     if user.is_superuser or user.groups.filter(name='IT').exists():
         return equipment.can_be_transferred()
     else:
-        # Normalny użytkownik może przekazać tylko swój sprzęt
-        return equipment.assigned_to == user and equipment.can_be_transferred() 
+        # Zwykli użytkownicy nie mogą przekazywać sprzętu
+        return False 

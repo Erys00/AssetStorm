@@ -13,7 +13,10 @@
                     <a href="{% url 'equipment:equipment_list' %}" class="btn btn-outline-primary me-2">
                         <i class="fas fa-list me-1"></i>Lista sprzętu
                     </a>
-                    {% if is_it_staff %}
+                    {% if is_it_staff|default:False %}
+                        <a href="{% url 'equipment:export_equipment_excel' %}" class="btn btn-success me-2">
+                            <i class="fas fa-file-excel me-1"></i>Eksport Excel
+                        </a>
                         <a href="{% url 'equipment:equipment_create' %}" class="btn btn-primary">
                             <i class="fas fa-plus me-1"></i>Dodaj sprzęt
                         </a>
@@ -28,7 +31,7 @@
         <div class="col-md-2 col-sm-6 mb-3">
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ total_equipment }}</h3>
+                    <h3 class="card-title">{{ total_equipment|default:0 }}</h3>
                     <p class="card-text">Wszystkich urządzeń</p>
                 </div>
             </div>
@@ -36,7 +39,7 @@
         <div class="col-md-2 col-sm-6 mb-3">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ available_count }}</h3>
+                    <h3 class="card-title">{{ available_count|default:0 }}</h3>
                     <p class="card-text">Dostępnych</p>
                 </div>
             </div>
@@ -44,7 +47,7 @@
         <div class="col-md-2 col-sm-6 mb-3">
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ in_use_count }}</h3>
+                    <h3 class="card-title">{{ in_use_count|default:0 }}</h3>
                     <p class="card-text">W użyciu</p>
                 </div>
             </div>
@@ -52,7 +55,7 @@
         <div class="col-md-2 col-sm-6 mb-3">
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ service_count }}</h3>
+                    <h3 class="card-title">{{ service_count|default:0 }}</h3>
                     <p class="card-text">W serwisie</p>
                 </div>
             </div>
@@ -60,16 +63,16 @@
         <div class="col-md-2 col-sm-6 mb-3">
             <div class="card bg-secondary text-white">
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ retired_count }}</h3>
+                    <h3 class="card-title">{{ retired_count|default:0 }}</h3>
                     <p class="card-text">Wycofanych</p>
                 </div>
             </div>
         </div>
-        {% if is_it_staff %}
+        {% if is_it_staff|default:False %}
         <div class="col-md-2 col-sm-6 mb-3">
             <div class="card bg-dark text-white">
                 <div class="card-body text-center">
-                    <h3 class="card-title">{{ total_value|floatformat:0 }} zł</h3>
+                    <h3 class="card-title">{{ total_value|default:0|floatformat:0 }} zł</h3>
                     <p class="card-text">Wartość sprzętu</p>
                 </div>
             </div>
@@ -87,7 +90,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if equipment_by_type %}
+                    {% if equipment_by_type|default:False %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -99,9 +102,9 @@
                                 <tbody>
                                     {% for item in equipment_by_type %}
                                     <tr>
-                                        <td>{{ item.type }}</td>
+                                        <td>{{ item.type|default:"Nie podano" }}</td>
                                         <td class="text-end">
-                                            <span class="badge bg-primary">{{ item.count }}</span>
+                                            <span class="badge bg-primary">{{ item.count|default:0 }}</span>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -124,7 +127,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if equipment_by_supplier %}
+                    {% if equipment_by_supplier|default:False %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -136,9 +139,9 @@
                                 <tbody>
                                     {% for item in equipment_by_supplier %}
                                     <tr>
-                                        <td>{{ item.supplier }}</td>
+                                        <td>{{ item.supplier|default:"Nie podano" }}</td>
                                         <td class="text-end">
-                                            <span class="badge bg-info">{{ item.count }}</span>
+                                            <span class="badge bg-info">{{ item.count|default:0 }}</span>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -153,7 +156,7 @@
         </div>
     </div>
 
-    {% if is_it_staff %}
+    {% if is_it_staff|default:False %}
     <div class="row">
         <!-- Alerty gwarancyjne -->
         <div class="col-md-6 mb-4">
@@ -165,7 +168,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if warranty_alerts %}
+                    {% if warranty_alerts|default:False %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -178,13 +181,13 @@
                                     {% for equipment in warranty_alerts %}
                                     <tr>
                                         <td>
-                                            <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="text-decoration-none">
-                                                {{ equipment.name }}
+                                            <a href="{% url 'equipment:equipment_detail' equipment.pk|default:0 %}" class="text-decoration-none">
+                                                {{ equipment.name|default:"Nie podano" }}
                                             </a>
                                         </td>
                                         <td class="text-end">
                                             <span class="badge bg-warning text-dark">
-                                                {{ equipment.warranty_end_date|date:"d.m.Y" }}
+                                                {{ equipment.warranty_end_date|date:"d.m.Y"|default:"Nie podano" }}
                                             </span>
                                         </td>
                                     </tr>
@@ -208,7 +211,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if recent_transfers %}
+                    {% if recent_transfers|default:False %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -222,13 +225,23 @@
                                     {% for transfer in recent_transfers %}
                                     <tr>
                                         <td>
-                                            <a href="{% url 'equipment:equipment_detail' transfer.equipment.pk %}" class="text-decoration-none">
-                                                {{ transfer.equipment.name }}
-                                            </a>
+                                            {% if transfer.equipment %}
+                                                <a href="{% url 'equipment:equipment_detail' transfer.equipment.pk|default:0 %}" class="text-decoration-none">
+                                                    {{ transfer.equipment.name|default:"Nie podano" }}
+                                                </a>
+                                            {% else %}
+                                                <span class="text-muted">Usunięty sprzęt</span>
+                                            {% endif %}
                                         </td>
-                                        <td>{{ transfer.to_user.get_full_name|default:transfer.to_user.username }}</td>
+                                        <td>
+                                            {% if transfer.to_user %}
+                                                {{ transfer.to_user.get_full_name|default:transfer.to_user.username }}
+                                            {% else %}
+                                                <span class="text-muted">System</span>
+                                            {% endif %}
+                                        </td>
                                         <td class="text-end">
-                                            <small class="text-muted">{{ transfer.transfer_date|date:"d.m.Y" }}</small>
+                                            <small class="text-muted">{{ transfer.transfer_date|date:"d.m.Y"|default:"Nie podano" }}</small>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -253,7 +266,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if long_service %}
+                    {% if long_service|default:False %}
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -267,14 +280,14 @@
                                     {% for equipment in long_service %}
                                     <tr>
                                         <td>
-                                            <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="text-decoration-none">
-                                                {{ equipment.name }}
+                                            <a href="{% url 'equipment:equipment_detail' equipment.pk|default:0 %}" class="text-decoration-none">
+                                                {{ equipment.name|default:"Nie podano" }}
                                             </a>
                                         </td>
-                                        <td>{{ equipment.location }}</td>
+                                        <td>{{ equipment.location|default:"Nie podano" }}</td>
                                         <td class="text-end">
                                             <span class="badge bg-danger">
-                                                {{ equipment.updated_at|date:"d.m.Y" }}
+                                                {{ equipment.updated_at|date:"d.m.Y"|default:"Nie podano" }}
                                             </span>
                                         </td>
                                     </tr>

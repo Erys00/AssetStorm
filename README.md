@@ -1,29 +1,69 @@
 # AssetStorm - Ewidencja Sprzętu IT
 
-Aplikacja webowa do prowadzenia ewidencji sprzętu IT dla małych firm, napisana w Django.
+Profesjonalna aplikacja webowa do zarządzania sprzętem IT dla małych i średnich firm, napisana w Django. System oferuje kompleksowe narzędzia do ewidencji, śledzenia i analizy sprzętu komputerowego.
 
-## Funkcjonalności
+## 🚀 Główne funkcjonalności
 
-- **Zarządzanie sprzętem**: Dodawanie, edycja, usuwanie i przeglądanie sprzętu
-- **Szczegółowe informacje**: Nazwa, typ, numer seryjny, data zakupu, lokalizacja, status
-- **Przypisywanie użytkowników**: Możliwość przypisania sprzętu do konkretnych użytkowników
-- **Filtrowanie i wyszukiwanie**: Wyszukiwanie po nazwie, numerze seryjnym, typie oraz filtrowanie po statusie
-- **Panel administracyjny**: Pełny panel admina Django do zarządzania danymi
-- **Responsywny design**: Interfejs dostosowany do urządzeń mobilnych
+### 📊 Dashboard z analityką
+- **Statystyki w czasie rzeczywistym** - liczba urządzeń według statusu
+- **Analiza finansowa** - wartość sprzętu, średnie koszty (tylko dla IT)
+- **Analiza według typów** - najpopularniejsze kategorie sprzętu
+- **Analiza według dostawców** - najczęściej używane marki
+- **Alerty gwarancyjne** - sprzęt z kończącą się gwarancją (30 dni)
+- **Ostatnie transfery** - historia przekazań sprzętu
+- **Monitoring serwisu** - sprzęt długo w naprawie
 
-## Statusy sprzętu
+### 🔍 Zaawansowane wyszukiwanie i filtrowanie
+- **Wyszukiwanie ogólne** - nazwa, numer seryjny, typ, numer faktury, lokalizacja, dostawca, uwagi
+- **Filtry specjalistyczne** - status, lokalizacja, dostawca, użytkownik (IT)
+- **Inteligentne dopasowania** - częściowe wyszukiwanie, ignorowanie wielkości liter
+- **Kombinowane filtry** - możliwość łączenia wielu kryteriów
 
-- **Dostępny** - sprzęt gotowy do użycia
-- **W użyciu** - sprzęt aktualnie używany
-- **Serwis** - sprzęt w naprawie
-- **Wycofany** - sprzęt wycofany z użytku
+### 📋 Eksport i raportowanie
+- **Eksport do Excel** - profesjonalne raporty z formatowaniem
+- **Eksport sprzętu** - wszystkie dane w formacie .xlsx
+- **Eksport transferów** - historia przekazań sprzętu
+- **Automatyczne nazwy plików** - z datą i godziną generowania
 
-## Instalacja i uruchomienie
+### 📱 Kody QR
+- **Automatyczne generowanie** - kody QR dla każdego sprzętu
+- **Bezpośredni dostęp** - skanowanie prowadzi do szczegółów sprzętu
+- **Pobieranie** - możliwość pobrania kodu QR jako obraz
+- **Responsywny modal** - wyświetlanie w przeglądarce
 
-### Wymagania
+### 🛠️ Harmonogram konserwacji
+- **Planowanie przeglądów** - różne typy konserwacji
+- **Śledzenie kosztów** - koszty napraw i techników
+- **Status wykonania** - kontrola postępu prac
+- **Historia konserwacji** - pełna dokumentacja
+
+### 💰 Zarządzanie finansowe
+- **Numer faktury** - śledzenie dokumentów zakupu
+- **Cena zakupu** - wartość sprzętu
+- **Dostawca** - firma dostarczająca sprzęt
+- **Koniec gwarancji** - data wygaśnięcia gwarancji
+- **Koszty konserwacji** - śledzenie wydatków na serwis
+
+### 👥 Zarządzanie użytkownikami
+- **Role użytkowników** - IT, zwykli użytkownicy
+- **Kontrola dostępu** - różne uprawnienia według ról
+- **Historia transferów** - śledzenie przekazań sprzętu
+- **Przypisywanie sprzętu** - łatwe zarządzanie zasobami
+
+## 📊 Statusy sprzętu
+
+- **🟢 Dostępny** - sprzęt gotowy do użycia
+- **🔵 W użyciu** - sprzęt aktualnie używany
+- **🟡 Serwis** - sprzęt w naprawie
+- **⚫ Wycofany** - sprzęt wycofany z użytku
+
+## 🛠️ Instalacja i uruchomienie
+
+### Wymagania systemowe
 
 - Python 3.8+
-- Django 4.0+
+- Django 5.2+
+- SQLite (domyślnie) lub PostgreSQL/MySQL
 
 ### Krok 1: Klonowanie repozytorium
 
@@ -45,7 +85,7 @@ source myvenv/bin/activate
 ### Krok 3: Instalacja zależności
 
 ```bash
-pip install django
+pip install -r requirements.txt
 ```
 
 ### Krok 4: Migracje bazy danych
@@ -67,67 +107,99 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Aplikacja będzie dostępna pod adresem: http://127.0.0.1:8000/
+Aplikacja będzie dostępna pod adresem: **http://127.0.0.1:8000/**
 
-## Użytkowanie
+## 📖 Użytkowanie
 
-### Panel administracyjny
+### 🏠 Dashboard
+- **Główna strona** - przegląd statystyk i alertów
+- **Szybki dostęp** - do najważniejszych funkcji
+- **Alerty** - gwarancje, serwis, transfery
 
-1. Przejdź do http://127.0.0.1:8000/admin/
-2. Zaloguj się używając danych superużytkownika
-3. W sekcji "Equipment" możesz zarządzać sprzętem
-
-### Interfejs użytkownika
-
-1. **Lista sprzętu** - główna strona z listą wszystkich sprzętów
-2. **Dodawanie sprzętu** - przycisk "Dodaj sprzęt" w nawigacji
-3. **Szczegóły sprzętu** - kliknij na nazwę sprzętu w liście
+### 📋 Zarządzanie sprzętem
+1. **Lista sprzętu** - `/equipment/equipment/`
+2. **Dodawanie sprzętu** - przycisk "Dodaj sprzęt"
+3. **Szczegóły sprzętu** - kliknij na nazwę w liście
 4. **Edycja** - przycisk "Edytuj" na stronie szczegółów
 5. **Usuwanie** - przycisk "Usuń" na stronie szczegółów
+6. **Transfer** - przycisk "Przekaż" do zmiany właściciela
 
-### Filtrowanie i wyszukiwanie
+### 🔍 Wyszukiwanie i filtrowanie
+- **Pole wyszukiwania** - wpisz dowolny tekst
+- **Filtr statusu** - wybierz status sprzętu
+- **Filtr lokalizacji** - wyszukaj po lokalizacji
+- **Filtr dostawcy** - znajdź sprzęt od konkretnej firmy
+- **Filtr użytkownika** - tylko dla IT i adminów
 
-- Użyj pola "Wyszukaj" do znalezienia sprzętu po nazwie, numerze seryjnym lub typie
-- Użyj filtra "Status" do wyświetlenia sprzętu o określonym statusie
-- Kliknij "Wyczyść" aby zresetować filtry
+### 📊 Eksport danych
+- **Eksport Excel** - przycisk "Eksport Excel" na dashboard
+- **Automatyczne pobieranie** - pliki .xlsx z datą i godziną
+- **Formatowanie** - profesjonalne tabele z nagłówkami
 
-## Struktura projektu
+### 📱 Kody QR
+- **Generowanie** - przycisk "Kod QR" na stronie szczegółów
+- **Skanowanie** - prowadzi bezpośrednio do szczegółów sprzętu
+- **Pobieranie** - możliwość zapisania kodu jako obraz
+
+## 🏗️ Struktura projektu
 
 ```
 AssetStorm/
-├── assetstorm/          # Główny projekt Django
-│   ├── settings.py      # Ustawienia projektu
-│   ├── urls.py          # Główny routing URL
+├── assetstorm/              # Główny projekt Django
+│   ├── settings.py          # Ustawienia projektu
+│   ├── urls.py              # Główny routing URL
 │   └── ...
-├── equipment/           # Aplikacja sprzętu
-│   ├── models.py        # Model Equipment
-│   ├── views.py         # Widoki aplikacji
-│   ├── forms.py         # Formularze
-│   ├── admin.py         # Konfiguracja panelu admina
-│   ├── urls.py          # Routing URL aplikacji
-│   └── templates/       # Szablony HTML
+├── equipment/               # Aplikacja sprzętu
+│   ├── models.py            # Modele Equipment, EquipmentTransfer, MaintenanceSchedule
+│   ├── views.py             # Widoki aplikacji
+│   ├── forms.py             # Formularze
+│   ├── admin.py             # Konfiguracja panelu admina
+│   ├── urls.py              # Routing URL aplikacji
+│   ├── decorators.py        # Dekoratory kontroli dostępu
+│   └── templates/           # Szablony HTML
 │       └── equipment/
 │           ├── base.html
+│           ├── dashboard.html
 │           ├── equipment_list.html
 │           ├── equipment_detail.html
 │           ├── equipment_form.html
-│           └── equipment_confirm_delete.html
-├── manage.py            # Skrypt zarządzania Django
-└── README.md           # Ten plik
+│           ├── equipment_confirm_delete.html
+│           ├── equipment_transfer.html
+│           ├── my_equipment.html
+│           └── login.html
+├── media/                   # Pliki mediów (kody QR)
+│   └── qr_codes/
+├── manage.py                # Skrypt zarządzania Django
+├── requirements.txt         # Zależności Python
+└── README.md               # Ten plik
 ```
 
-## Technologie
+## 🛠️ Technologie
 
-- **Backend**: Django 5.2
+- **Backend**: Django 5.2.6
 - **Baza danych**: SQLite (domyślnie)
-- **Frontend**: HTML, CSS (Bootstrap 5), JavaScript
+- **Frontend**: HTML5, CSS3, Bootstrap 5, JavaScript
 - **Ikony**: Font Awesome 6
+- **Eksport**: openpyxl (Excel)
+- **Kody QR**: qrcode + Pillow
+- **Responsywność**: Bootstrap 5
 
-## Rozwój
+## 📦 Zależności
+
+```
+asgiref==3.9.1
+Django==5.2.6
+sqlparse==0.5.3
+openpyxl==3.1.5
+qrcode[pil]==8.2
+Pillow==11.3.0
+```
+
+## 🔧 Rozwój
 
 ### Dodawanie nowych funkcjonalności
 
-1. Edytuj model w `equipment/models.py`
+1. Edytuj modele w `equipment/models.py`
 2. Utwórz migracje: `python manage.py makemigrations`
 3. Zastosuj migracje: `python manage.py migrate`
 4. Dodaj widoki w `equipment/views.py`
@@ -140,10 +212,49 @@ Szablony używają Bootstrap 5. Możesz dostosować wygląd edytując:
 - `equipment/templates/equipment/base.html` - główny szablon
 - Poszczególne szablony w `equipment/templates/equipment/`
 
-## Licencja
+### Konfiguracja
+
+- **Ustawienia**: `assetstorm/settings.py`
+- **URL-e**: `assetstorm/urls.py`
+- **Media**: `MEDIA_URL` i `MEDIA_ROOT`
+- **Site URL**: `SITE_URL` dla kodów QR
+
+## 🎯 Korzyści dla małych firm
+
+### 💰 Oszczędności
+- **Kontrola kosztów** - śledzenie wartości sprzętu
+- **Planowanie budżetu** - alerty gwarancyjne
+- **Optymalizacja** - analiza wykorzystania sprzętu
+
+### ⏰ Efektywność
+- **Szybkie wyszukiwanie** - zaawansowane filtry
+- **Mobilny dostęp** - kody QR na telefonie
+- **Automatyzacja** - eksport raportów
+
+### 📊 Przejrzystość
+- **Dashboard** - stan sprzętu na pierwszy rzut oka
+- **Historia** - pełna dokumentacja transferów
+- **Raporty** - dane dla księgowości
+
+### 🛡️ Bezpieczeństwo
+- **Kontrola dostępu** - role użytkowników
+- **Audyt** - historia wszystkich zmian
+- **Backup** - eksport danych
+
+## 📞 Wsparcie
+
+- **Dokumentacja**: Ten plik README
+- **Panel admina**: `/admin/` - pełna administracja
+- **Logi**: Sprawdzaj konsolę serwera Django
+
+## 📄 Licencja
 
 Ten projekt jest dostępny na licencji MIT.
 
-## Autor
+## 👨‍💻 Autor
 
-AssetStorm - System ewidencji sprzętu IT dla małych firm. 
+**AssetStorm** - Profesjonalny system ewidencji sprzętu IT dla małych i średnich firm.
+
+---
+
+*Ostatnia aktualizacja: Wrzesień 2025*

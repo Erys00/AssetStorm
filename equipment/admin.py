@@ -43,3 +43,25 @@ class EquipmentTransferAdmin(admin.ModelAdmin):
             'fields': ('reason', 'transferred_by')
         }),
     )
+
+
+@admin.register(MaintenanceSchedule)
+class MaintenanceScheduleAdmin(admin.ModelAdmin):
+    list_display = ['equipment', 'maintenance_type', 'scheduled_date', 'is_completed', 'technician', 'cost']
+    list_filter = ['maintenance_type', 'is_completed', 'scheduled_date']
+    search_fields = ['equipment__name', 'equipment__serial_number', 'technician', 'description']
+    date_hierarchy = 'scheduled_date'
+    ordering = ['scheduled_date']
+    
+    fieldsets = (
+        ('Podstawowe informacje', {
+            'fields': ('equipment', 'maintenance_type', 'scheduled_date', 'is_completed')
+        }),
+        ('Szczegóły konserwacji', {
+            'fields': ('description', 'technician', 'cost', 'completed_date')
+        }),
+        ('Dodatkowe informacje', {
+            'fields': ('notes', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

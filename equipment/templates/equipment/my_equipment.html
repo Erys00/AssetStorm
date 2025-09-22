@@ -21,6 +21,15 @@
             </div>
         </div>
 
+        <!-- Informacja o przekazywaniu sprzętu -->
+        {% if not is_it_staff %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Uwaga:</strong> Przekazywanie sprzętu jest możliwe tylko przez użytkowników z grupy IT. 
+            Jeśli potrzebujesz przekazać sprzęt, skontaktuj się z działem IT.
+        </div>
+        {% endif %}
+
         <!-- Filtry i wyszukiwanie -->
         <div class="card mb-4">
             <div class="card-body">
@@ -95,12 +104,6 @@
                                    class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye me-1"></i>Szczegóły
                                 </a>
-                                {% if equipment.can_be_transferred %}
-                                    <a href="{% url 'equipment:equipment_transfer' equipment.pk %}" 
-                                       class="btn btn-sm btn-success">
-                                        <i class="fas fa-exchange-alt me-1"></i>Przekaż
-                                    </a>
-                                {% endif %}
                             </div>
                         </div>
                     </div>

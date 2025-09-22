@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+import qrcode
+from io import BytesIO
+from django.core.files.base import ContentFile
 
 
 class Equipment(models.Model):
@@ -38,6 +41,7 @@ class Equipment(models.Model):
         related_name='assigned_equipment'
     )
     notes = models.TextField('Uwagi', blank=True)
+    qr_code = models.ImageField('Kod QR', upload_to='qr_codes/', blank=True, null=True)
     created_at = models.DateTimeField('Data utworzenia', auto_now_add=True)
     updated_at = models.DateTimeField('Data aktualizacji', auto_now=True)
 
@@ -66,6 +70,39 @@ class Equipment(models.Model):
     def get_transfer_history(self):
         """Zwraca historię przekazań sprzętu"""
         return self.transfers.all().order_by('-transfer_date')
+    
+    def generate_qr_code(self):
+        """Generuje kod QR dla sprzętu"""
+        if not self.qr_code:  # Generuj tylko jeśli nie ma już kodu
+            # Utwórz URL do szczegółów sprzętu
+            from django.urls import reverse
+            from django.conf import settings
+            
+            # Użyj bezwzględnego URL
+            url = f"{settings.SITE_URL or 'http://127.0.0.1:8000'}{reverse('equipment:equipment_detail', args=[self.pk])}"
+            
+            # Utwórz kod QR
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=4,
+            )
+            qr.add_data(url)
+            qr.make(fit=True)
+            
+            # Utwórz obraz
+            img = qr.make_image(fill_color="black", back_color="white")
+            
+            # Zapisz do BytesIO
+            buffer = BytesIO()
+            img.save(buffer, format='PNG')
+            buffer.seek(0)
+            
+            # Zapisz jako pole ImageField
+            filename = f'qr_{self.serial_number}.png'
+            self.qr_code.save(filename, ContentFile(buffer.getvalue()), save=False)
+            self.save()
 
 
 class EquipmentTransfer(models.Model):

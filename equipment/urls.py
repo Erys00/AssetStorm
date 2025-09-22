@@ -14,4 +14,6 @@ urlpatterns = [
     path('<int:pk>/edit/', views.equipment_update, name='equipment_update'),
     path('<int:pk>/delete/', views.equipment_delete, name='equipment_delete'),
     path('<int:pk>/transfer/', views.equipment_transfer, name='equipment_transfer'),
+    path('export/equipment/', views.export_equipment_excel, name='export_equipment_excel'),
+    path('export/transfers/', views.export_transfers_excel, name='export_transfers_excel'),
 ] 

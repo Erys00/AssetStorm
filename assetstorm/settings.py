@@ -126,3 +126,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/equipment/login/'
 LOGIN_REDIRECT_URL = '/equipment/'
 LOGOUT_REDIRECT_URL = '/equipment/login/'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Site URL for QR codes
+SITE_URL = 'http://127.0.0.1:8000'
