@@ -16,8 +16,16 @@ class Equipment(models.Model):
     serial_number = models.CharField(
         'Numer seryjny', max_length=100, unique=True
     )
+    invoice_number = models.CharField(
+        'Numer faktury', max_length=100, blank=True, null=True
+    )
     purchase_date = models.DateField('Data zakupu')
+    purchase_price = models.DecimalField(
+        'Cena zakupu', max_digits=10, decimal_places=2, blank=True, null=True
+    )
     location = models.CharField('Lokalizacja', max_length=100)
+    supplier = models.CharField('Dostawca', max_length=100, blank=True)
+    warranty_end_date = models.DateField('Koniec gwarancji', blank=True, null=True)
     status = models.CharField(
         'Status', max_length=20, choices=STATUS_CHOICES, default='available'
     )
@@ -105,3 +113,41 @@ class EquipmentTransfer(models.Model):
         to_user = (self.to_user.get_full_name()
                    if self.to_user else "System")
         return f"{self.equipment.name} - od {from_user} do {to_user}"
+
+
+class MaintenanceSchedule(models.Model):
+    """Model do zarządzania harmonogramem konserwacji sprzętu"""
+    MAINTENANCE_TYPES = [
+        ('preventive', 'Przegląd prewencyjny'),
+        ('repair', 'Naprawa'),
+        ('cleaning', 'Czyszczenie'),
+        ('update', 'Aktualizacja'),
+        ('inspection', 'Kontrola'),
+    ]
+    
+    equipment = models.ForeignKey(
+        Equipment, on_delete=models.CASCADE, verbose_name='Sprzęt'
+    )
+    maintenance_type = models.CharField(
+        'Typ konserwacji', max_length=20, choices=MAINTENANCE_TYPES
+    )
+    scheduled_date = models.DateField('Zaplanowana data')
+    completed_date = models.DateField('Data wykonania', blank=True, null=True)
+    description = models.TextField('Opis konserwacji')
+    cost = models.DecimalField(
+        'Koszt', max_digits=10, decimal_places=2, blank=True, null=True
+    )
+    technician = models.CharField('Technik', max_length=100, blank=True)
+    notes = models.TextField('Uwagi', blank=True)
+    is_completed = models.BooleanField('Wykonane', default=False)
+    created_at = models.DateTimeField('Data utworzenia', auto_now_add=True)
+    updated_at = models.DateTimeField('Data aktualizacji', auto_now=True)
+
+    class Meta:
+        verbose_name = 'Harmonogram konserwacji'
+        verbose_name_plural = 'Harmonogramy konserwacji'
+        ordering = ['scheduled_date']
+
+    def __str__(self):
+        status = "✓" if self.is_completed else "⏳"
+        return f'{status} {self.equipment.name} - {self.get_maintenance_type_display()} ({self.scheduled_date})'

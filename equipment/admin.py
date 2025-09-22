@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Equipment, EquipmentTransfer
+from .models import Equipment, EquipmentTransfer, MaintenanceSchedule
 
 
 @admin.register(Equipment)

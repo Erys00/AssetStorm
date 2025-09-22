@@ -18,12 +18,17 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'equipment:equipment_list' %}">
-                            <i class="fas fa-list me-1"></i>Lista sprzętu
-                        </a>
-                    </li>
                     {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'equipment:dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'equipment:equipment_list' %}">
+                                <i class="fas fa-list me-1"></i>Lista sprzętu
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'equipment:my_equipment' %}">
                                 <i class="fas fa-user me-1"></i>Mój sprzęt
@@ -52,14 +57,14 @@
                                 <i class="fas fa-user me-1"></i>{{ user.username }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <li><a class="dropdown-item" href="{% url 'equipment:logout' %}?v=2">
                                     <i class="fas fa-sign-out-alt me-1"></i>Wyloguj
                                 </a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
+                            <a class="nav-link" href="{% url 'equipment:login' %}">
                                 <i class="fas fa-sign-in-alt me-1"></i>Zaloguj
                             </a>
                         </li>

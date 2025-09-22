@@ -1,0 +1,294 @@
+{% extends 'equipment/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - AssetStorm{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+                <div>
+                    <a href="{% url 'equipment:equipment_list' %}" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-list me-1"></i>Lista sprzętu
+                    </a>
+                    {% if is_it_staff %}
+                        <a href="{% url 'equipment:equipment_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Dodaj sprzęt
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statystyki podstawowe -->
+    <div class="row mb-4">
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ total_equipment }}</h3>
+                    <p class="card-text">Wszystkich urządzeń</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ available_count }}</h3>
+                    <p class="card-text">Dostępnych</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ in_use_count }}</h3>
+                    <p class="card-text">W użyciu</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ service_count }}</h3>
+                    <p class="card-text">W serwisie</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ retired_count }}</h3>
+                    <p class="card-text">Wycofanych</p>
+                </div>
+            </div>
+        </div>
+        {% if is_it_staff %}
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ total_value|floatformat:0 }} zł</h3>
+                    <p class="card-text">Wartość sprzętu</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Statystyki po typach -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Sprzęt według typów
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if equipment_by_type %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Typ</th>
+                                        <th class="text-end">Ilość</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in equipment_by_type %}
+                                    <tr>
+                                        <td>{{ item.type }}</td>
+                                        <td class="text-end">
+                                            <span class="badge bg-primary">{{ item.count }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak danych</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Statystyki po dostawcach -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-building me-2"></i>Sprzęt według dostawców
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if equipment_by_supplier %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Dostawca</th>
+                                        <th class="text-end">Ilość</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in equipment_by_supplier %}
+                                    <tr>
+                                        <td>{{ item.supplier }}</td>
+                                        <td class="text-end">
+                                            <span class="badge bg-info">{{ item.count }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak danych</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_it_staff %}
+    <div class="row">
+        <!-- Alerty gwarancyjne -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Alerty gwarancyjne
+                        <small class="text-muted">(kończy się w ciągu 30 dni)</small>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if warranty_alerts %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sprzęt</th>
+                                        <th class="text-end">Gwarancja do</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for equipment in warranty_alerts %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="text-decoration-none">
+                                                {{ equipment.name }}
+                                            </a>
+                                        </td>
+                                        <td class="text-end">
+                                            <span class="badge bg-warning text-dark">
+                                                {{ equipment.warranty_end_date|date:"d.m.Y" }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak alertów gwarancyjnych</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ostatnie transfery -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>Ostatnie transfery
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_transfers %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sprzęt</th>
+                                        <th>Do</th>
+                                        <th class="text-end">Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transfer in recent_transfers %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'equipment:equipment_detail' transfer.equipment.pk %}" class="text-decoration-none">
+                                                {{ transfer.equipment.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ transfer.to_user.get_full_name|default:transfer.to_user.username }}</td>
+                                        <td class="text-end">
+                                            <small class="text-muted">{{ transfer.transfer_date|date:"d.m.Y" }}</small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak ostatnich transferów</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sprzęt długo w serwisie -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-tools me-2"></i>Sprzęt długo w serwisie
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if long_service %}
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Sprzęt</th>
+                                        <th>Lokalizacja</th>
+                                        <th class="text-end">Ostatnia aktualizacja</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for equipment in long_service %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'equipment:equipment_detail' equipment.pk %}" class="text-decoration-none">
+                                                {{ equipment.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ equipment.location }}</td>
+                                        <td class="text-end">
+                                            <span class="badge bg-danger">
+                                                {{ equipment.updated_at|date:"d.m.Y" }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">Brak sprzętu długo w serwisie</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

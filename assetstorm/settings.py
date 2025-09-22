@@ -123,6 +123,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Authentication settings
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/equipment/login/'
 LOGIN_REDIRECT_URL = '/equipment/'
-LOGOUT_REDIRECT_URL = '/equipment/'
+LOGOUT_REDIRECT_URL = '/equipment/login/'

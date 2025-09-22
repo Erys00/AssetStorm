@@ -18,7 +18,7 @@ def it_staff_required(view_func):
                 messages.error(request, 'Nie masz uprawnień do wykonania tej operacji.')
                 return redirect('equipment:my_equipment')
         else:
-            return redirect('login')
+            return redirect('equipment:login')
     return _wrapped_view
 
 
@@ -50,7 +50,7 @@ def can_access_equipment(view_func):
             
             return view_func(request, *args, **kwargs)
         else:
-            return redirect('login')
+            return redirect('equipment:login')
     return _wrapped_view
 
 
@@ -59,6 +59,10 @@ def get_user_equipment_queryset(user):
     Funkcja pomocnicza zwracająca queryset sprzętu dostępnego dla użytkownika
     """
     from .models import Equipment
+    
+    # Sprawdź czy użytkownik jest zalogowany
+    if not user.is_authenticated:
+        return Equipment.objects.none()
     
     if user.is_superuser or user.groups.filter(name='IT').exists():
         # Pełny dostęp dla superuser i IT

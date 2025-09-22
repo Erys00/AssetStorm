@@ -23,12 +23,13 @@
         <div class="card mb-4">
             <div class="card-body">
                 <form method="get" class="row g-3">
+                    <!-- Pierwszy rząd -->
                     <div class="col-md-4">
                         <label for="search" class="form-label">Wyszukaj</label>
                         <input type="text" class="form-control" id="search" name="search" 
-                               value="{{ search_query }}" placeholder="Nazwa, numer seryjny, typ...">
+                               value="{{ search_query }}" placeholder="Nazwa, numer seryjny, typ, faktura, lokalizacja, dostawca...">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="status" class="form-label">Status</label>
                         <select class="form-control" id="status" name="status">
                             <option value="">Wszystkie</option>
@@ -39,6 +40,16 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <div class="col-md-2">
+                        <label for="location" class="form-label">Lokalizacja</label>
+                        <input type="text" class="form-control" id="location" name="location" 
+                               value="{{ location_filter }}" placeholder="Lokalizacja...">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="supplier" class="form-label">Dostawca</label>
+                        <input type="text" class="form-control" id="supplier" name="supplier" 
+                               value="{{ supplier_filter }}" placeholder="Dostawca...">
+                    </div>
                     {% if is_it_staff %}
                         <div class="col-md-2">
                             <label for="user" class="form-label">Użytkownik</label>
@@ -46,7 +57,9 @@
                                    value="{{ user_filter }}" placeholder="Nazwa użytkownika...">
                         </div>
                     {% endif %}
-                    <div class="col-md-{% if is_it_staff %}3{% else %}5{% endif %} d-flex align-items-end">
+                    
+                    <!-- Drugi rząd z przyciskami -->
+                    <div class="col-12 d-flex align-items-end">
                         <button type="submit" class="btn btn-outline-primary me-2">
                             <i class="fas fa-search me-1"></i>Szukaj
                         </button>
