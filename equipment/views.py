@@ -131,15 +131,24 @@ def equipment_list(request):
     # Wyszukiwanie
     search_query = request.GET.get('search', '')
     if search_query:
-        equipment_list = equipment_list.filter(
-            Q(name__icontains=search_query) |
-            Q(serial_number__icontains=search_query) |
-            Q(type__icontains=search_query) |
-            Q(invoice_number__icontains=search_query) |
-            Q(location__icontains=search_query) |
-            Q(supplier__icontains=search_query) |
-            Q(notes__icontains=search_query)
-        )
+        # Sprawdź czy wyszukiwany tekst to liczba (ID)
+        search_filters = Q(name__icontains=search_query) | \
+                        Q(serial_number__icontains=search_query) | \
+                        Q(type__icontains=search_query) | \
+                        Q(invoice_number__icontains=search_query) | \
+                        Q(location__icontains=search_query) | \
+                        Q(supplier__icontains=search_query) | \
+                        Q(notes__icontains=search_query)
+        
+        # Dodaj wyszukiwanie po ID jeśli tekst to liczba
+        try:
+            search_id = int(search_query)
+            search_filters |= Q(id=search_id)
+        except ValueError:
+            # Jeśli nie można przekonwertować na int, pomiń wyszukiwanie po ID
+            pass
+        
+        equipment_list = equipment_list.filter(search_filters)
     
     # Filtrowanie po statusie
     status_filter = request.GET.get('status', '')
@@ -333,15 +342,24 @@ def my_equipment(request):
     # Wyszukiwanie
     search_query = request.GET.get('search', '')
     if search_query:
-        equipment_list = equipment_list.filter(
-            Q(name__icontains=search_query) |
-            Q(serial_number__icontains=search_query) |
-            Q(type__icontains=search_query) |
-            Q(invoice_number__icontains=search_query) |
-            Q(location__icontains=search_query) |
-            Q(supplier__icontains=search_query) |
-            Q(notes__icontains=search_query)
-        )
+        # Sprawdź czy wyszukiwany tekst to liczba (ID)
+        search_filters = Q(name__icontains=search_query) | \
+                        Q(serial_number__icontains=search_query) | \
+                        Q(type__icontains=search_query) | \
+                        Q(invoice_number__icontains=search_query) | \
+                        Q(location__icontains=search_query) | \
+                        Q(supplier__icontains=search_query) | \
+                        Q(notes__icontains=search_query)
+        
+        # Dodaj wyszukiwanie po ID jeśli tekst to liczba
+        try:
+            search_id = int(search_query)
+            search_filters |= Q(id=search_id)
+        except ValueError:
+            # Jeśli nie można przekonwertować na int, pomiń wyszukiwanie po ID
+            pass
+        
+        equipment_list = equipment_list.filter(search_filters)
     
     # Filtrowanie po statusie
     status_filter = request.GET.get('status', '')

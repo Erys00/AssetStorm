@@ -37,7 +37,7 @@
                     <div class="col-md-4">
                         <label for="search" class="form-label">Wyszukaj</label>
                         <input type="text" class="form-control" id="search" name="search" 
-                               value="{{ search_query }}" placeholder="Nazwa, typ, numer seryjny...">
+                               value="{{ search_query }}" placeholder="Nazwa, typ, numer seryjny, ID...">
                     </div>
                     <div class="col-md-3">
                         <label for="status" class="form-label">Status</label>
@@ -76,6 +76,11 @@
                         </div>
                         <div class="card-body">
                             <dl class="row mb-3">
+                                <dt class="col-sm-4">ID:</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-secondary">{{ equipment.pk }}</span>
+                                </dd>
+                                
                                 <dt class="col-sm-4">Typ:</dt>
                                 <dd class="col-sm-8">{{ equipment.type }}</dd>
                                 
