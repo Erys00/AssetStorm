@@ -1,6 +1,6 @@
 # AssetStorm - Ewidencja Sprzętu IT
 
-Profesjonalna aplikacja webowa do zarządzania sprzętem IT dla małych i średnich firm, napisana w Django. System oferuje kompleksowe narzędzia do ewidencji, śledzenia i analizy sprzętu komputerowego.
+Profesjonalna aplikacja webowa do zarządzania sprzętem IT dla małych i średnich firm, napisana w Django. System oferuje kompleksowe narzędzia do ewidencji, śledzenia, analizy sprzętu komputerowego oraz zaawansowany system przekazań z akceptacją i protokołami PDF.
 
 ## 🚀 Główne funkcjonalności
 
@@ -44,11 +44,27 @@ Profesjonalna aplikacja webowa do zarządzania sprzętem IT dla małych i średn
 - **Koniec gwarancji** - data wygaśnięcia gwarancji
 - **Koszty konserwacji** - śledzenie wydatków na serwis
 
-### 👥 Zarządzanie użytkownikami
-- **Role użytkowników** - IT, zwykli użytkownicy
-- **Kontrola dostępu** - różne uprawnienia według ról
+### 👥 Zarządzanie użytkownikami i uprawnieniami
+- **Grupy użytkowników** - IT (pełny dostęp), normal_user (tylko podgląd)
+- **Kontrola dostępu** - różne uprawnienia według grup
 - **Historia transferów** - śledzenie przekazań sprzętu
 - **Przypisywanie sprzętu** - łatwe zarządzanie zasobami
+- **Automatyczne skrypty** - setup_groups.py do konfiguracji uprawnień
+
+### 🔄 Zaawansowany system przekazań sprzętu
+- **Przekazania z akceptacją** - odbiorca musi zaakceptować sprzęt
+- **Statusy przekazań** - pending, approved, rejected, cancelled
+- **Powody odrzucenia** - wymagane przy odrzuceniu przekazania
+- **Automatyczne protokoły PDF** - profesjonalne dokumenty przekazania
+- **Lista oczekujących** - przegląd przekazań do akceptacji
+- **Historia decyzji** - pełne śledzenie akceptacji/odrzuceń
+
+### 📄 Generowanie protokołów PDF
+- **Automatyczne protokoły** - po akceptacji przekazania
+- **Polskie znaki** - pełna obsługa znaków diakrytycznych
+- **Format A4** - optymalizacja na jedną stronę
+- **Zawartość protokołu** - dane sprzętu, użytkowników, podpisy
+- **Profesjonalne formatowanie** - gotowe do wydruku
 
 ## 📊 Statusy sprzętu
 
@@ -95,13 +111,25 @@ python manage.py makemigrations equipment
 python manage.py migrate
 ```
 
-### Krok 5: Tworzenie superużytkownika
+### Krok 5: Konfiguracja grup użytkowników
+
+```bash
+python manage.py setup_groups
+```
+
+### Krok 6: Dodanie przykładowych danych (opcjonalnie)
+
+```bash
+python manage.py add_sample_data
+```
+
+### Krok 7: Tworzenie superużytkownika
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### Krok 6: Uruchomienie serwera
+### Krok 8: Uruchomienie serwera
 
 ```bash
 python manage.py runserver
@@ -118,11 +146,18 @@ Aplikacja będzie dostępna pod adresem: **http://127.0.0.1:8000/**
 
 ### 📋 Zarządzanie sprzętem
 1. **Lista sprzętu** - `/equipment/equipment/`
-2. **Dodawanie sprzętu** - przycisk "Dodaj sprzęt"
+2. **Dodawanie sprzętu** - przycisk "Dodaj sprzęt" (tylko IT)
 3. **Szczegóły sprzętu** - kliknij na nazwę w liście
-4. **Edycja** - przycisk "Edytuj" na stronie szczegółów
-5. **Usuwanie** - przycisk "Usuń" na stronie szczegółów
-6. **Transfer** - przycisk "Przekaż" do zmiany właściciela
+4. **Edycja** - przycisk "Edytuj" na stronie szczegółów (tylko IT)
+5. **Usuwanie** - przycisk "Usuń" na stronie szczegółów (tylko IT)
+6. **Transfer** - przycisk "Przekaż" do zmiany właściciela (tylko IT)
+
+### 🔄 System przekazań sprzętu
+1. **Przekazywanie sprzętu** - IT tworzy wniosek o przekazanie
+2. **Oczekujące przekazania** - `/equipment/pending-transfers/`
+3. **Akceptacja/odrzucenie** - odbiorca decyduje o przekazaniu
+4. **Automatyczny protokół PDF** - po akceptacji
+5. **Historia przekazań** - pełna dokumentacja decyzji
 
 ### 🔍 Wyszukiwanie i filtrowanie
 - **Pole wyszukiwania** - wpisz dowolny tekst
@@ -137,9 +172,21 @@ Aplikacja będzie dostępna pod adresem: **http://127.0.0.1:8000/**
 - **Formatowanie** - profesjonalne tabele z nagłówkami
 
 ### 📱 Kody QR
-- **Generowanie** - przycisk "Kod QR" na stronie szczegółów
+- **Generowanie** - przycisk "Kod QR" na stronie szczegółów (tylko IT)
 - **Skanowanie** - prowadzi bezpośrednio do szczegółów sprzętu
 - **Pobieranie** - możliwość zapisania kodu jako obraz
+
+### 👥 Zarządzanie użytkownikami
+- **Grupa IT** - pełny dostęp do wszystkich funkcji
+- **Grupa normal_user** - tylko podgląd własnego sprzętu
+- **Konfiguracja grup** - `python manage.py setup_groups`
+- **Przykładowi użytkownicy** - `python manage.py add_sample_data`
+
+### 📄 Protokoły PDF
+- **Automatyczne generowanie** - po akceptacji przekazania
+- **Zawartość** - dane sprzętu, użytkowników, podpisy
+- **Format A4** - optymalizacja na jedną stronę
+- **Polskie znaki** - pełna obsługa diakrytyków
 
 ## 🏗️ Struktura projektu
 
