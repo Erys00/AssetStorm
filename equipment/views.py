@@ -5,12 +5,18 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count, Sum, Avg
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from datetime import datetime, timedelta
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from .models import Equipment, EquipmentTransfer
-from .forms import EquipmentForm, EquipmentTransferForm, CustomLoginForm
+from .forms import EquipmentForm, EquipmentTransferForm, CustomLoginForm, EquipmentTransferApprovalForm
 from .decorators import it_staff_required, can_access_equipment, get_user_equipment_queryset, can_transfer_equipment
 
 
@@ -296,6 +302,7 @@ def equipment_transfer(request, pk):
             transfer.equipment = equipment
             transfer.from_user = equipment.assigned_to
             transfer.transferred_by = request.user
+            transfer.approval_status = 'pending'  # Nowy transfer czeka na akceptację
             
             # Sprawdź czy to_user jest poprawnie ustawiony
             if not transfer.to_user:
@@ -306,19 +313,15 @@ def equipment_transfer(request, pk):
                     'title': f'Przekaż sprzęt: {equipment.name}'
                 })
             
-            # Aktualizuj przypisanie sprzętu
-            equipment.assigned_to = transfer.to_user
-            equipment.status = 'in_use'
-            equipment.save()
-            
-            # Zapisz transfer
+            # Zapisz transfer (bez aktualizacji sprzętu - to się stanie po akceptacji)
             transfer.save()
             
             to_user_name = transfer.to_user.get_full_name() or transfer.to_user.username
             
             messages.success(
                 request, 
-                f'Sprzęt "{equipment.name}" został przekazany użytkownikowi {to_user_name}.'
+                f'Wniosek o przekazanie sprzętu "{equipment.name}" został wysłany do użytkownika {to_user_name}. '
+                f'Przekazanie zostanie zrealizowane po akceptacji przez odbiorcę.'
             )
             return redirect('equipment:equipment_detail', pk=equipment.pk)
         else:
@@ -499,4 +502,208 @@ def export_transfers_excel(request):
     
     # Zapisz skoroszyt
     wb.save(response)
+    return response
+
+
+@login_required
+def pending_transfers(request):
+    """Lista przekazań oczekujących na akceptację przez użytkownika"""
+    pending_transfers = EquipmentTransfer.objects.filter(
+        to_user=request.user,
+        approval_status='pending'
+    ).select_related('equipment', 'from_user', 'transferred_by').order_by('-transfer_date')
+    
+    context = {
+        'pending_transfers': pending_transfers,
+    }
+    return render(request, 'equipment/pending_transfers.html', context)
+
+
+@login_required
+def approve_transfer(request, transfer_id):
+    """Akceptacja lub odrzucenie przekazania sprzętu"""
+    transfer = get_object_or_404(EquipmentTransfer, pk=transfer_id)
+    
+    # Sprawdź czy użytkownik może zaakceptować to przekazanie
+    if not transfer.can_be_approved_by(request.user):
+        raise Http404("Nie możesz zaakceptować tego przekazania.")
+    
+    if request.method == 'POST':
+        form = EquipmentTransferApprovalForm(request.POST)
+        if form.is_valid():
+            action = form.cleaned_data['action']
+            reason = form.cleaned_data['reason']
+            
+            if action == 'approve':
+                transfer.approve(request.user)
+                messages.success(
+                    request,
+                    f'Przekazanie sprzętu "{transfer.equipment.name}" zostało zaakceptowane. '
+                    f'Protokół przekazania został wygenerowany.'
+                )
+                return redirect('equipment:transfer_protocol', transfer_id=transfer.id)
+            else:  # reject
+                transfer.reject(request.user, reason)
+                messages.success(
+                    request,
+                    f'Przekazanie sprzętu "{transfer.equipment.name}" zostało odrzucone.'
+                )
+                return redirect('equipment:pending_transfers')
+    else:
+        form = EquipmentTransferApprovalForm()
+    
+    context = {
+        'transfer': transfer,
+        'form': form,
+    }
+    return render(request, 'equipment/approve_transfer.html', context)
+
+
+@login_required
+def transfer_protocol(request, transfer_id):
+    """Generowanie protokołu przekazania sprzętu w PDF"""
+    transfer = get_object_or_404(EquipmentTransfer, pk=transfer_id)
+    
+    # Sprawdź czy użytkownik może zobaczyć protokół
+    if not (request.user == transfer.to_user or 
+            request.user.is_superuser or 
+            request.user.groups.filter(name='IT').exists()):
+        raise Http404("Nie masz uprawnień do wyświetlenia tego protokołu.")
+    
+    # Utwórz odpowiedź HTTP dla PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="protokol_przekazania_{transfer.equipment.serial_number}.pdf"'
+    
+    # Użyj czcionek z obsługą polskich znaków
+    # ReportLab ma wbudowane czcionki z Unicode
+    font_name = 'Helvetica'
+    font_bold = 'Helvetica-Bold'
+    
+    # Alternatywnie można użyć Times-Roman lub Courier
+    # font_name = 'Times-Roman'
+    # font_bold = 'Times-Bold'
+    
+    # Utwórz dokument PDF z marginesami
+    doc = SimpleDocTemplate(
+        response, 
+        pagesize=A4,
+        rightMargin=2*cm,
+        leftMargin=2*cm,
+        topMargin=2*cm,
+        bottomMargin=2*cm
+    )
+    
+    story = []
+    
+    # Style z polskimi znakami
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        fontName=font_bold,
+        fontSize=14,
+        spaceAfter=15,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        fontName=font_bold,
+        fontSize=10,
+        spaceAfter=8,
+        spaceBefore=8,
+        textColor=colors.darkblue
+    )
+    
+    normal_style = ParagraphStyle(
+        'CustomNormal',
+        fontName=font_name,
+        fontSize=9,
+        spaceAfter=4,
+        alignment=TA_LEFT
+    )
+    
+    # Tytuł
+    story.append(Paragraph("PROTOKÓŁ PRZEKAZANIA SPRZĘTU IT", title_style))
+    story.append(Spacer(1, 10))
+    
+    # Dane przekazania w jednej tabeli
+    basic_data = [
+        ['Data przekazania:', transfer.transfer_date.strftime('%d.%m.%Y %H:%M')],
+        ['Numer protokołu:', f'PP/{transfer.id:04d}/{transfer.transfer_date.year}'],
+        ['Sprzęt:', transfer.equipment.name],
+        ['Numer seryjny:', transfer.equipment.serial_number],
+        ['Typ sprzętu:', transfer.equipment.type],
+        ['Od użytkownika:', transfer.from_user.get_full_name() if transfer.from_user else 'System'],
+        ['Do użytkownika:', transfer.to_user.get_full_name() if transfer.to_user else 'System'],
+        ['Przekazane przez:', transfer.transferred_by.get_full_name() if transfer.transferred_by else 'System'],
+        ['Lokalizacja:', transfer.equipment.location],
+        ['Dostawca:', transfer.equipment.supplier or 'Nie podano'],
+        ['Data zakupu:', transfer.equipment.purchase_date.strftime('%d.%m.%Y') if transfer.equipment.purchase_date else 'Nie podano'],
+        ['Cena zakupu:', f'{transfer.equipment.purchase_price} PLN' if transfer.equipment.purchase_price else 'Nie podano'],
+        ['Koniec gwarancji:', transfer.equipment.warranty_end_date.strftime('%d.%m.%Y') if transfer.equipment.warranty_end_date else 'Nie podano'],
+        ['Status:', transfer.equipment.get_status_display()],
+    ]
+    
+    basic_table = Table(basic_data, colWidths=[3.5*cm, 10*cm])
+    basic_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), font_name),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BACKGROUND', (0, 0), (0, -1), colors.grey),
+        ('FONTNAME', (0, 0), (0, -1), font_bold),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.black),
+    ]))
+    
+    story.append(basic_table)
+    story.append(Spacer(1, 10))
+    
+    # Powód przekazania (jeśli istnieje)
+    if transfer.reason:
+        story.append(Paragraph("Powód przekazania:", heading_style))
+        story.append(Paragraph(transfer.reason, normal_style))
+        story.append(Spacer(1, 8))
+    
+    # Status akceptacji
+    status_text = f"Zaakceptowane przez: {transfer.approved_by.get_full_name() if transfer.approved_by else 'System'}<br/>"
+    status_text += f"Data akceptacji: {transfer.approved_at.strftime('%d.%m.%Y %H:%M') if transfer.approved_at else 'Nie zaakceptowano'}"
+    story.append(Paragraph("Status akceptacji:", heading_style))
+    story.append(Paragraph(status_text, normal_style))
+    story.append(Spacer(1, 15))
+    
+    # Podpisy w jednej linii
+    signatures_data = [
+        ['Odbiorca sprzętu:', '', 'Data:', ''],
+        ['', '', '', ''],
+        ['Podpis:', '', 'Podpis:', ''],
+        ['', '', '', ''],
+    ]
+    
+    signatures_table = Table(signatures_data, colWidths=[3*cm, 4*cm, 2*cm, 4*cm])
+    signatures_table.setStyle(TableStyle([
+        ('LINEBELOW', (1, 1), (1, 1), 1, colors.black),
+        ('LINEBELOW', (1, 3), (1, 3), 1, colors.black),
+        ('LINEBELOW', (3, 1), (3, 1), 1, colors.black),
+        ('LINEBELOW', (3, 3), (3, 3), 1, colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), font_name),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    
+    story.append(signatures_table)
+    story.append(Spacer(1, 10))
+    
+    # Stopka
+    story.append(Paragraph(
+        f"Protokół wygenerowany automatycznie przez system AssetStorm • "
+        f"Data wygenerowania: {timezone.now().strftime('%d.%m.%Y %H:%M')}",
+        ParagraphStyle('Footer', fontName=font_name, fontSize=7, alignment=TA_CENTER)
+    ))
+    
+    # Zbuduj PDF
+    doc.build(story)
     return response

@@ -83,4 +83,40 @@ class CustomLoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'class': 'form-control'})
-        self.fields['password'].widget.attrs.update({'class': 'form-control'}) 
+        self.fields['password'].widget.attrs.update({'class': 'form-control'})
+
+
+class EquipmentTransferApprovalForm(forms.Form):
+    """Formularz do akceptacji/odrzucenia przekazania sprzętu"""
+    ACTION_CHOICES = [
+        ('approve', 'Zaakceptuj przekazanie'),
+        ('reject', 'Odrzuć przekazanie'),
+    ]
+    
+    action = forms.ChoiceField(
+        choices=ACTION_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label='Decyzja',
+        required=True
+    )
+    
+    reason = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Podaj powód odrzucenia (opcjonalne dla akceptacji)...'
+            }
+        ),
+        label='Powód',
+        required=False
+    )
+    
+    def clean_reason(self):
+        action = self.cleaned_data.get('action')
+        reason = self.cleaned_data.get('reason')
+        
+        if action == 'reject' and not reason:
+            raise forms.ValidationError('Powód odrzucenia jest wymagany.')
+        
+        return reason 

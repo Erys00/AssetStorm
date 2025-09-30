@@ -1,0 +1,112 @@
+{% extends 'equipment/base.html' %}
+{% load static %}
+
+{% block title %}Przekazania oczekujące na akceptację{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-clock text-warning"></i> Przekazania oczekujące na akceptację</h2>
+                <a href="{% url 'equipment:equipment_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Powrót do listy
+                </a>
+            </div>
+            
+            {% if pending_transfers %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    Masz <strong>{{ pending_transfers|length }}</strong> przekazań oczekujących na Twoją akceptację.
+                </div>
+                
+                <div class="row">
+                    {% for transfer in pending_transfers %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-clock"></i> Oczekuje na akceptację
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-subtitle mb-2 text-muted">{{ transfer.equipment.type }}</h6>
+                                <h5 class="card-title">{{ transfer.equipment.name }}</h5>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <strong>Numer seryjny:</strong><br>
+                                        <code>{{ transfer.equipment.serial_number }}</code>
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <strong>Od użytkownika:</strong><br>
+                                        {% if transfer.from_user %}
+                                            {{ transfer.from_user.get_full_name|default:transfer.from_user.username }}
+                                        {% else %}
+                                            System
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <strong>Przekazane przez:</strong><br>
+                                        {% if transfer.transferred_by %}
+                                            {{ transfer.transferred_by.get_full_name|default:transfer.transferred_by.username }}
+                                        {% else %}
+                                            System
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <strong>Data przekazania:</strong><br>
+                                        {{ transfer.transfer_date|date:"d.m.Y H:i" }}
+                                    </small>
+                                </div>
+                                
+                                {% if transfer.reason %}
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <strong>Powód przekazania:</strong><br>
+                                        {{ transfer.reason|truncatewords:20 }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2">
+                                    <a href="{% url 'equipment:approve_transfer' transfer.id %}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-check"></i> Zdecyduj o przekazaniu
+                                    </a>
+                                    <a href="{% url 'equipment:equipment_detail' transfer.equipment.id %}" 
+                                       class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-eye"></i> Zobacz sprzęt
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Świetnie!</strong> Nie masz żadnych przekazań oczekujących na akceptację.
+                </div>
+                
+                <div class="text-center">
+                    <a href="{% url 'equipment:equipment_list' %}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> Przejdź do listy sprzętu
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

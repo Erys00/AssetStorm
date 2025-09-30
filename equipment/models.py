@@ -107,6 +107,14 @@ class Equipment(models.Model):
 
 class EquipmentTransfer(models.Model):
     """Model do śledzenia historii przekazań sprzętu"""
+    
+    APPROVAL_STATUS_CHOICES = [
+        ('pending', 'Oczekuje na akceptację'),
+        ('approved', 'Zaakceptowane'),
+        ('rejected', 'Odrzucone'),
+        ('cancelled', 'Anulowane'),
+    ]
+    
     equipment = models.ForeignKey(
         Equipment,
         on_delete=models.CASCADE,
@@ -138,6 +146,22 @@ class EquipmentTransfer(models.Model):
         related_name='transfers_created',
         verbose_name='Przekazane przez'
     )
+    approval_status = models.CharField(
+        'Status akceptacji',
+        max_length=20,
+        choices=APPROVAL_STATUS_CHOICES,
+        default='pending'
+    )
+    approved_at = models.DateTimeField('Data akceptacji', null=True, blank=True)
+    approved_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='transfers_approved',
+        verbose_name='Zaakceptowane przez'
+    )
+    rejection_reason = models.TextField('Powód odrzucenia', blank=True)
     
     class Meta:
         verbose_name = 'Przekazanie sprzętu'
@@ -150,6 +174,35 @@ class EquipmentTransfer(models.Model):
         to_user = (self.to_user.get_full_name()
                    if self.to_user else "System")
         return f"{self.equipment.name} - od {from_user} do {to_user}"
+    
+    def approve(self, approved_by):
+        """Akceptuje przekazanie sprzętu"""
+        self.approval_status = 'approved'
+        self.approved_at = timezone.now()
+        self.approved_by = approved_by
+        self.save()
+        
+        # Aktualizuj przypisanie sprzętu
+        if self.to_user:
+            self.equipment.assigned_to = self.to_user
+            self.equipment.status = 'in_use'
+            self.equipment.save()
+    
+    def reject(self, rejected_by, reason=''):
+        """Odrzuca przekazanie sprzętu"""
+        self.approval_status = 'rejected'
+        self.rejection_reason = reason
+        self.approved_at = timezone.now()
+        self.approved_by = rejected_by
+        self.save()
+    
+    def is_pending(self):
+        """Sprawdza czy przekazanie czeka na akceptację"""
+        return self.approval_status == 'pending'
+    
+    def can_be_approved_by(self, user):
+        """Sprawdza czy użytkownik może zaakceptować to przekazanie"""
+        return self.to_user == user and self.is_pending()
 
 
 class MaintenanceSchedule(models.Model):
